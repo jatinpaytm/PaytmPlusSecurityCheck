@@ -31,27 +31,41 @@ public class AuthenticationService {
   private final JwtService jwtService;
   private final AuthenticationManager authenticationManager;
 
-  public AuthenticationResponse register(RegisterRequest request) {
-    var user = User.builder()
-        .firstname(request.getFirstname())
-        .lastname(request.getLastname())
-        .email(request.getEmail())
-        .password(passwordEncoder.encode(request.getPassword()))
-            .role(Role.USER)
-//        .role(request.getRole())
-        .build();
-    repository.save(user);
-    //var savedUser = repository.save(user);
-    var jwtToken = jwtService.generateToken(user);
-    //var refreshToken = jwtService.generateRefreshToken(user);
-    //saveUserToken(savedUser, jwtToken);
-    return AuthenticationResponse.builder()
-        .accessToken(jwtToken)
+  public PairUtil1 register(RegisterRequest request) {
+    boolean user = repository.findByEmail(request.getEmail()).isEmpty();
+    var user1 = User.builder()
+            .firstname(request.getFirstname())
+            .lastname(request.getLastname())
+            .email(request.getEmail())
+            .password(passwordEncoder.encode(request.getPassword()))
+//            .role(Role.USER)
+            .role(request.getRole())
+            .build();
+    boolean alreadyRegistered = true;
+
+    if(user==true)
+    {
+      alreadyRegistered=false;
+      repository.save(user1);
+    }
+
+    var jwtToken = jwtService.generateToken(user1);
+    var second_var = AuthenticationResponse.builder()
+            .accessToken(jwtToken)
 //            .refreshToken(refreshToken)
-        .build();
+            .build();
+
+
+    PairUtil1 res = new PairUtil1(alreadyRegistered,second_var);
+    return res;
   }
 
-  public AuthenticationResponse authenticate(AuthenticationRequest request) {
+  /**
+   *
+   * @param request
+   * @return
+   */
+  public PairUtil authenticate(AuthenticationRequest request) {
     authenticationManager.authenticate(
         new UsernamePasswordAuthenticationToken(
             request.getEmail(),
@@ -60,14 +74,22 @@ public class AuthenticationService {
     );
     var user = repository.findByEmail(request.getEmail())
         .orElseThrow();
+    var userRole = user.getRole();
     var jwtToken = jwtService.generateToken(user);
     //var refreshToken = jwtService.generateRefreshToken(user);
     //revokeAllUserTokens(user);
     //saveUserToken(user, jwtToken);
-    return AuthenticationResponse.builder()
-        .accessToken(jwtToken)
+    var second_var=AuthenticationResponse.builder()
+            .accessToken(jwtToken)
             //.refreshToken(refreshToken)
-        .build();
+            .build();
+    PairUtil res = new PairUtil(userRole,second_var);
+
+    return res;
+//    return AuthenticationResponse.builder()
+//        .accessToken(jwtToken)
+//            //.refreshToken(refreshToken)
+//        .build();
   }
 
 //  private void saveUserToken(User user, String jwtToken) {
