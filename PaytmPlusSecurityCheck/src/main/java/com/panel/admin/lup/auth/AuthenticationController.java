@@ -36,4 +36,9 @@ public class AuthenticationController {
     return ResponseEntity.ok(service.authenticate(request));
   }
 
+  @PostMapping("/changePassword")
+  public ResponseEntity<AuthenticationResponse> changePassword(@RequestBody ChangePasswordRequest request){
+    return ResponseEntity.ok(service.changePassword(request));
+  }
+
 }

@@ -9,6 +9,9 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.Optional;
+
 @Service
 @RequiredArgsConstructor
 public class AuthenticationService {
@@ -25,6 +28,7 @@ public class AuthenticationService {
   public PairUtil1 register(RegisterRequest request) {
     boolean user = repository.findByEmail(request.getEmail()).isEmpty();
     var user1 = User.builder()
+            .RegisteredBy(request.getRegisteredBy())
             .firstname(request.getFirstname())
             .lastname(request.getLastname())
             .email(request.getEmail())
@@ -75,4 +79,30 @@ public class AuthenticationService {
 
   }
 
+    public AuthenticationResponse changePassword(ChangePasswordRequest request) {
+
+        Optional<User> user = repository.findByEmail(request.getEmail());
+      //System.out.println("\n\n\n");
+        //System.out.println(user.get().getEmail());
+        repository.deleteById(user.get().getId());
+      //System.out.println("\n\n\n");
+
+      var user1 = User.builder()
+              .RegisteredBy(user.get().getRegisteredBy())
+              .firstname(user.get().getFirstname())
+              .lastname(user.get().getLastname())
+              .email(user.get().getEmail())
+              .password(passwordEncoder.encode(request.getNewPassword()))
+              .role(user.get().getRole())
+              .build();
+
+      repository.save(user1);
+
+      var jwtToken = jwtService.generateToken(user1);
+
+      return AuthenticationResponse.builder()
+              .accessToken(jwtToken)
+              .build();
+
+    }
 }

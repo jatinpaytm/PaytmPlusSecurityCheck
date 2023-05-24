@@ -33,6 +33,10 @@ public class User implements UserDetails {
   private Integer id;
 
   @NotNull
+  @Email(regexp = "^(?=.*[@])(?=.*[.])(?=.*@(paytm\\.com|ocltp\\.com|paytmbank\\.com|paytmpayment\\.com)$).+@.*$", message = "Invalid email address")
+  private String RegisteredBy;
+
+  @NotNull
   private String firstname;
 
   @NotNull
@@ -62,6 +66,10 @@ public class User implements UserDetails {
   @Override
   public String getUsername() {
     return email;
+  }
+
+  public String getRegisteredBy() {
+    return RegisteredBy;
   }
 
   @Override
